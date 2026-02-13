@@ -86,6 +86,7 @@ This guide is modular. Each file is self-contained but cross-linked.
 | [Frontend](./frontend.md) | Component systems, state management, API integration, performance, accessibility, design systems |
 | [Prompt Engineering](./prompt-engineering.md) | System vs user prompts, constraint layering, output schemas, debugging, versioning, prompt libraries |
 | [DevOps](./devops.md) | CI/CD, IaC, deployment pipelines, monitoring, scaling, observability |
+| [Application Security](./security.md) | OWASP Web/API/LLM Top 10, input validation, auth hardening, secrets management, threat modeling |
 | [Workflows](./workflows.md) | End-to-end SaaS build from idea to production, automation, internal tooling |
 | [Example Build: InvoiceKit](./example-build.md) | Complete 12-step prompt chain building a real SaaS — from product brief to deploy |
 
