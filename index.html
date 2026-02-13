@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Fira+Code:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
   <!-- Marked.js -->
@@ -99,9 +99,9 @@
        STATIC TOKENS
        ========================================================= */
     :root {
-      --font-display: 'Syne', sans-serif;
-      --font-body: 'Crimson Pro', Georgia, serif;
-      --font-code: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Instrument Sans', sans-serif;
+      --font-code: 'JetBrains Mono', monospace;
       --sidebar-width: 300px;
       --content-max: 820px;
       --header-height: 56px;
@@ -131,7 +131,7 @@
     }
 
     html {
-      font-size: 18px;
+      font-size: 17px;
       scroll-behavior: smooth;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -141,7 +141,8 @@
       font-family: var(--font-body);
       background: var(--bg-root);
       color: var(--text-primary);
-      line-height: 1.75;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
       overflow: hidden;
       height: 100vh;
     }
@@ -593,9 +594,10 @@
       font-size: 2.2rem;
       font-weight: 800;
       color: var(--text-heading);
-      line-height: 1.15;
-      margin-bottom: 8px;
-      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      letter-spacing: -0.03em;
+      text-wrap: balance;
     }
 
     #content h1+blockquote {
@@ -605,26 +607,29 @@
 
     #content h2 {
       font-family: var(--font-display);
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: 700;
       color: var(--text-heading);
       line-height: 1.2;
-      margin-top: 56px;
+      margin-top: 52px;
       margin-bottom: 20px;
-      padding-bottom: 8px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border-subtle);
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
       scroll-margin-top: 24px;
+      text-wrap: balance;
     }
 
     #content h3 {
       font-family: var(--font-display);
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 600;
       color: var(--text-heading);
       margin-top: 40px;
       margin-bottom: 14px;
+      letter-spacing: -0.01em;
       scroll-margin-top: 24px;
+      text-wrap: balance;
     }
 
     #content h4 {
