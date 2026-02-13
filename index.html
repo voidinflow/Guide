@@ -203,8 +203,24 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transition: transform 0.4s var(--ease-out), opacity 0.3s ease;
+      transition: width 0.35s var(--ease-out), min-width 0.35s var(--ease-out), transform 0.4s var(--ease-out), opacity 0.3s ease;
       z-index: 100;
+    }
+
+    #sidebar.collapsed {
+      width: 0;
+      min-width: 0;
+      border-right-width: 0;
+      overflow: hidden;
+    }
+
+    #sidebar.collapsed .sidebar-header,
+    #sidebar.collapsed .sidebar-search,
+    #sidebar.collapsed .sidebar-chapters,
+    #sidebar.collapsed .sidebar-footer {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
     }
 
     .sidebar-header {
@@ -378,13 +394,20 @@
     }
 
     #hamburger {
-      display: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: none;
       border: none;
       color: var(--text-secondary);
       cursor: pointer;
       padding: 4px;
       line-height: 1;
+      transition: color 0.2s ease;
+    }
+
+    #hamburger:hover {
+      color: var(--accent-text);
     }
 
     #hamburger svg {
@@ -806,6 +829,38 @@
       border-radius: 8px;
       padding: 24px;
       border: 1px solid var(--border-subtle);
+      cursor: zoom-in;
+      position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .mermaid:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .mermaid::after {
+      content: '⤢';
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 18px;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .mermaid:hover::after {
+      opacity: 0.7;
+    }
+
+    .mermaid::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      cursor: zoom-in;
     }
 
     #content ul.contains-task-list {
@@ -828,6 +883,102 @@
       max-width: 100%;
       border-radius: 8px;
       margin: 16px 0;
+      cursor: zoom-in;
+      transition: filter 0.2s;
+    }
+
+    #content img:hover {
+      filter: brightness(1.08);
+    }
+
+    /* =========================================================
+       IMAGE LIGHTBOX
+       ========================================================= */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      cursor: zoom-out;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    #lightbox.visible {
+      display: flex;
+      opacity: 1;
+    }
+
+    #lightbox-img {
+      max-width: 92vw;
+      max-height: 90vh;
+      border-radius: 6px;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
+      transform-origin: center center;
+      transition: transform 0.15s ease;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    #lightbox-img.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    #lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 28px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 32px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      z-index: 301;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    #lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+
+    #lightbox-zoom {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.5);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    #lightbox-hint {
+      position: absolute;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.35);
+      font-family: var(--font-body);
+      font-size: 12px;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity 0.4s;
     }
 
     /* =========================================================
@@ -994,8 +1145,9 @@
         display: block;
       }
 
-      #hamburger {
-        display: block;
+      #sidebar.collapsed {
+        width: 0;
+        min-width: 0;
       }
 
       #content {
@@ -1082,7 +1234,7 @@
       </div>
       <div class="sidebar-chapters" id="chapter-list" role="list"></div>
       <div class="sidebar-footer">
-        <div class="meta">9 chapters · <span id="word-count">—</span> words</div>
+        <div class="meta">10 chapters · <span id="word-count">—</span> words</div>
       </div>
     </nav>
 
@@ -1137,6 +1289,14 @@
     </main>
   </div>
 
+  <!-- IMAGE LIGHTBOX -->
+  <div id="lightbox" onclick="closeLightbox(event)">
+    <div id="lightbox-close" onclick="closeLightbox(event)">×</div>
+    <img id="lightbox-img" src="" alt="Zoomed image" draggable="false">
+    <div id="lightbox-hint">Scroll to zoom · Drag to pan · Esc to close</div>
+    <div id="lightbox-zoom">100%</div>
+  </div>
+
   <!-- SEARCH -->
   <div id="search-overlay" onclick="closeSearch()">
     <div id="search-panel" onclick="event.stopPropagation()">
@@ -1158,6 +1318,7 @@
       { id: 'prompt-engineering', file: 'prompt-engineering.md', title: 'Prompt Engineering' },
       { id: 'devops', file: 'devops.md', title: 'DevOps' },
       { id: 'security', file: 'security.md', title: 'Application Security' },
+      { id: 'tools', file: 'tools.md', title: 'AI Coding Tools' },
       { id: 'workflows', file: 'workflows.md', title: 'Workflows' },
       { id: 'example-build', file: 'example-build.md', title: 'Example Build: InvoiceKit' },
     ];
@@ -1333,6 +1494,16 @@
 
       try { await mermaid.run({ nodes: content.querySelectorAll('.mermaid') }); } catch (e) { }
 
+      // Attach direct click listeners to Mermaid diagrams for zoom
+      content.querySelectorAll('.mermaid').forEach(m => {
+        m.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const svg = this.querySelector('svg');
+          if (svg) openLightboxSVG(svg);
+        });
+      });
+
       // Store original mermaid source for theme re-renders
       content.querySelectorAll('.mermaid').forEach(m => {
         if (!m.getAttribute('data-original') && m.getAttribute('data-processed')) {
@@ -1420,11 +1591,29 @@
        SIDEBAR TOGGLE
        ============================================= */
     function toggleSidebar() {
-      const s = document.getElementById('sidebar'), o = document.getElementById('sidebar-overlay');
-      const isOpen = s.classList.toggle('open');
-      o.classList.toggle('visible', isOpen);
+      const s = document.getElementById('sidebar');
+      const o = document.getElementById('sidebar-overlay');
+      const isMobile = window.innerWidth <= 900;
+      if (isMobile) {
+        const isOpen = s.classList.toggle('open');
+        o.classList.toggle('visible', isOpen);
+      } else {
+        const isCollapsed = s.classList.toggle('collapsed');
+        localStorage.setItem('sidebar-collapsed', isCollapsed ? '1' : '0');
+      }
     }
-    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.remove('visible'); }
+    function closeSidebar() {
+      const s = document.getElementById('sidebar');
+      const o = document.getElementById('sidebar-overlay');
+      s.classList.remove('open');
+      o.classList.remove('visible');
+    }
+    // Restore sidebar state on load
+    (function () {
+      if (window.innerWidth > 900 && localStorage.getItem('sidebar-collapsed') === '1') {
+        document.getElementById('sidebar').classList.add('collapsed');
+      }
+    })();
 
     /* =============================================
        SEARCH
@@ -1487,6 +1676,7 @@
        KEYBOARD SHORTCUTS
        ============================================= */
     document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && lightbox.classList.contains('visible')) { closeLightbox({}); return; }
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); document.getElementById('search-overlay').classList.contains('visible') ? closeSearch() : openSearch(); }
       if (e.key === 'Escape') { closeSearch(); closeSidebar(); }
       if (document.getElementById('search-overlay').classList.contains('visible')) return;
@@ -1499,6 +1689,22 @@
        INTERNAL LINKS
        ============================================= */
     document.getElementById('content').addEventListener('click', function (e) {
+      /* Image zoom */
+      if (e.target.tagName === 'IMG' && e.target.closest('#content')) {
+        e.preventDefault();
+        openLightbox(e.target.src);
+        return;
+      }
+      /* Mermaid / SVG diagram zoom */
+      const mermaidEl = e.target.closest('.mermaid');
+      if (mermaidEl) {
+        const svg = mermaidEl.querySelector('svg');
+        if (svg) {
+          e.preventDefault();
+          openLightboxSVG(svg);
+          return;
+        }
+      }
       const link = e.target.closest('a');
       if (!link) return;
       const href = link.getAttribute('href');
@@ -1506,6 +1712,129 @@
       const mdMatch = href.match(/^\.\/(.+\.md)$/);
       if (mdMatch) { e.preventDefault(); const idx = CHAPTERS.findIndex(ch => ch.file === mdMatch[1]); if (idx !== -1) navigateTo(idx); }
       if (href.startsWith('#')) { e.preventDefault(); const el = document.getElementById(href.slice(1)); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+
+    /* =============================================
+       IMAGE LIGHTBOX
+       ============================================= */
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    const lbZoom = document.getElementById('lightbox-zoom');
+    const lbHint = document.getElementById('lightbox-hint');
+    let lbScale = 1, lbTx = 0, lbTy = 0;
+    let lbDragging = false, lbStartX = 0, lbStartY = 0, lbStartTx = 0, lbStartTy = 0;
+    let hintTimeout;
+
+    function openLightbox(src) {
+      lbImg.src = src;
+      lbScale = 1; lbTx = 0; lbTy = 0;
+      applyLbTransform();
+      lightbox.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+      lbHint.style.opacity = '1';
+      clearTimeout(hintTimeout);
+      hintTimeout = setTimeout(() => { lbHint.style.opacity = '0'; }, 3000);
+    }
+
+    function openLightboxSVG(svgEl) {
+      const clone = svgEl.cloneNode(true);
+      /* Use getBBox for true content bounds */
+      const bbox = svgEl.getBBox();
+      const pad = 40;
+      const vbX = bbox.x - pad;
+      const vbY = bbox.y - pad;
+      const vbW = bbox.width + pad * 2;
+      const vbH = bbox.height + pad * 2;
+      clone.removeAttribute('style');
+      clone.setAttribute('viewBox', `${vbX} ${vbY} ${vbW} ${vbH}`);
+      clone.setAttribute('width', vbW * 2);
+      clone.setAttribute('height', vbH * 2);
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      clone.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      clone.style.overflow = 'visible';
+      /* Set background on SVG itself */
+      const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-surface').trim() || '#1c1a18';
+      clone.style.background = bg;
+      clone.style.borderRadius = '8px';
+      clone.style.padding = '32px';
+      clone.style.boxSizing = 'content-box';
+      const xml = new XMLSerializer().serializeToString(clone);
+      const dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+      openLightbox(dataUri);
+    }
+
+    function closeLightbox(e) {
+      if (e && (e.target === lbImg || lbDragging)) return;
+      lightbox.classList.remove('visible');
+      document.body.style.overflow = '';
+      lbImg.classList.remove('dragging');
+      lbDragging = false;
+    }
+
+    function applyLbTransform() {
+      lbImg.style.transform = `translate(${lbTx}px, ${lbTy}px) scale(${lbScale})`;
+      lbZoom.textContent = Math.round(lbScale * 100) + '%';
+      lbImg.style.cursor = lbScale > 1 ? 'grab' : 'zoom-out';
+    }
+
+    /* Scroll to zoom */
+    lightbox.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.15 : 0.15;
+      lbScale = Math.min(Math.max(0.25, lbScale + delta), 8);
+      if (Math.abs(lbScale - 1) < 0.08) { lbScale = 1; lbTx = 0; lbTy = 0; }
+      applyLbTransform();
+    }, { passive: false });
+
+    /* Drag to pan */
+    lbImg.addEventListener('mousedown', function (e) {
+      if (lbScale <= 1) return;
+      e.preventDefault();
+      lbDragging = true;
+      lbStartX = e.clientX; lbStartY = e.clientY;
+      lbStartTx = lbTx; lbStartTy = lbTy;
+      lbImg.classList.add('dragging');
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (!lbDragging) return;
+      lbTx = lbStartTx + (e.clientX - lbStartX);
+      lbTy = lbStartTy + (e.clientY - lbStartY);
+      applyLbTransform();
+    });
+
+    window.addEventListener('mouseup', function () {
+      if (!lbDragging) return;
+      lbDragging = false;
+      lbImg.classList.remove('dragging');
+    });
+
+    /* Touch pinch zoom */
+    let lbLastTouchDist = 0;
+    lightbox.addEventListener('touchstart', function (e) {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        lbLastTouchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      }
+    }, { passive: false });
+
+    lightbox.addEventListener('touchmove', function (e) {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        const delta = (dist - lbLastTouchDist) * 0.008;
+        lbScale = Math.min(Math.max(0.25, lbScale + delta), 8);
+        lbLastTouchDist = dist;
+        applyLbTransform();
+      }
+    }, { passive: false });
+
+    /* Double-click to reset/zoom */
+    lbImg.addEventListener('dblclick', function (e) {
+      e.stopPropagation();
+      if (lbScale !== 1) { lbScale = 1; lbTx = 0; lbTy = 0; }
+      else { lbScale = 2.5; }
+      applyLbTransform();
     });
 
     /* =============================================
