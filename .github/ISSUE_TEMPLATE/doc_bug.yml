@@ -1,0 +1,35 @@
+name: Doc bug / confusion
+description: Something is wrong, unclear, or missing in the guide
+title: "Doc bug: "
+labels: ["docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks — high-signal reports help this guide stay practical.
+
+  - type: input
+    id: page
+    attributes:
+      label: Page / file
+      description: Which file is affected? (example: tools.md)
+      placeholder: tools.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What’s wrong?
+      description: What did you expect to learn/do, and what went wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix (optional)
+      description: If you have a specific edit in mind, drop it here.
+    validations:
+      required: false
+

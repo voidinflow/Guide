@@ -20,6 +20,18 @@ If you've ever:
 
 ---
 
+## How to Contribute (and get credited)
+
+If this guide saved you time, **pay it forward**:
+
+- **Fix friction**: unclear sections, missing steps, broken links
+- **Add examples**: a better prompt template, a real-world failure mode, a checklist that catches bugs
+- **Update fast-moving tool details**: file locations, settings keys, “gotchas” that changed
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for small/medium/large contribution paths, style conventions, and a PR checklist.
+
+---
+
 ## Philosophy
 
 ### 1. Prompting Is Systems Thinking

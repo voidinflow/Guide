@@ -12,6 +12,14 @@ A prompt is a specification. Like any spec, it can be vague or precise, complete
 
 The difference between a developer who "uses AI" and one who "builds with AI" is the same difference between someone who writes tickets and someone who writes RFCs. Both describe work. One produces predictable outcomes.
 
+### Quick Map (so you can skim fast)
+
+- **System vs user prompting**: “System Prompt vs User Prompt Structure”
+- **Roles**: “Role Prompting”
+- **Reliability**: “Constraint Layering”
+- **Making outputs machine-checkable**: “Structured Output Prompts”
+- **Keeping prompts stable over time**: “Versioning Prompts”
+
 ---
 
 ## System Prompt vs User Prompt Structure
@@ -51,6 +59,8 @@ graph TB
 ### System Prompt: The Constitution
 
 The system prompt defines **who the model is and what rules it follows.** It remains constant across interactions.
+
+If you want the practical “where do I put this in my editor?” setup (Cursor rules, Copilot instructions, Windsurf rules, Continue config), see [AI Coding Tools](./tools.md) → “System Prompting (Persistent Instructions)”.
 
 ```
 You are a senior backend engineer specializing in Python/FastAPI. You follow 

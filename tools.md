@@ -12,6 +12,14 @@ Every tool in this guide serves one function: **turning prompts into production 
 
 This is not a ranking. Every tool here has legitimate use cases. The best tool is the one that fits your workflow, your budget, and your project constraints.
 
+### Quick Map (so you can skim fast)
+
+- **Choosing a tool category**: jump to “Tool Categories”
+- **Picking by budget**: jump to “Budget Tiers”
+- **Editor setup + persistent instructions**: jump to “System Prompting (Persistent Instructions)”
+- **Tool-specific notes**: jump to “Tool Deep Dives”
+- **Avoiding failure modes**: jump to “Common Mistakes”
+
 ---
 
 ## Tool Categories
@@ -167,6 +175,48 @@ For teams, startups building AI-powered products, or developers running automate
 
 ## Tool Deep Dives
 
+### System Prompting (Persistent Instructions)
+
+Most AI coding failures are not model failures — they're **missing invariants**. You told the model *what to build*, but not *what rules it must never break*.
+
+In this guide, “system prompting” means **persistent instructions** that are automatically included in the model context every time you chat with an agent. Different editors use different names (rules, custom instructions, agent instructions), but the function is the same:
+
+- **System prompt / rules (persistent)**: the “constitution” — stable constraints, security invariants, output format, project conventions  
+- **User prompt (per-task)**: the “work order” — the specific feature/bugfix you want right now
+
+If you want the deeper theory and constraint layering, read [Prompt Engineering](./prompt-engineering.md) (see “System Prompt: The Constitution”).
+
+#### What belongs in a system prompt
+
+- **Architecture invariants**: folders, layering, “where code goes”, patterns to follow/avoid
+- **Security invariants**: authz-by-resource, parameterized queries, secrets handling, logging redaction (see [Application Security](./security.md))
+- **Quality bar**: tests required, linting, error handling expectations
+- **Output discipline**: “group changes by file”, “list assumptions”, “include test plan”
+
+#### What does *not* belong
+
+- Task-specific requirements (“build invoices next”) — put those in the per-task prompt
+- Giant style guides and encyclopedias — use linters/formatters; keep instructions short and enforceable
+- Anything that should come from code or config (versions, endpoints, schemas) — reference canonical files instead
+
+#### Portable strategy (works across editors)
+
+Keep **one canonical instruction source** in your repo, then map it into each tool’s mechanism:
+
+- **`AGENTS.md`**: widely supported, can be nested for directory-specific rules in several tools
+- **Optional**: `CLAUDE.md` / `GEMINI.md` (some ecosystems recognize these)
+- **Tool-specific**: Cursor rules, Copilot instructions, Windsurf rules, Continue config
+
+Treat these files as **versioned config**. When the agent repeats the same mistake twice, don’t “prompt harder” — update the rules.
+
+#### Quick learning loop (so people actually learn system prompting)
+
+- **Drill 1 — Refactor discipline**: add “preserve exact behavior, smallest change, no drive-by features” to your system prompt. Then do one refactor and check whether the output stayed surgical.
+- **Drill 2 — Security invariants**: add “authz per resource + parameterized queries + never echo secrets” and prompt for a CRUD endpoint. Verify the model enforces those without being reminded in the user prompt.
+- **Drill 3 — Output format**: require “group by file + assumptions + test plan”. If the model forgets, move the rule earlier / make it shorter.
+
+**Verification checklist:** Your system prompt is working when the model (a) restates constraints unprompted, (b) violates fewer invariants, and (c) produces consistent structure across sessions.
+
 ### Cursor
 
 **What it is:** A fork of VS Code with AI deeply integrated into the editor experience.
@@ -176,7 +226,8 @@ For teams, startups building AI-powered products, or developers running automate
 - Tab completion: context-aware autocomplete that understands your patterns
 - Inline diff: shows proposed changes before applying
 - Multi-model: switch between Claude, GPT-4o, Gemini per request
-- `.cursorrules`: project-level AI configuration file
+- Project Rules: `.cursor/rules/*` (recommended)
+- `AGENTS.md`: simple alternative for agent instructions
 
 **Weaknesses:**
 - Fork of VS Code — updates lag behind official VS Code
@@ -185,18 +236,27 @@ For teams, startups building AI-powered products, or developers running automate
 
 **Best for:** Daily coding workflow, rapid prototyping, developers who live in their editor.
 
-**Pro tip — `.cursorrules` file:**
+**System prompting setup (Cursor):**
+
+- **Project-wide rules**: create files in `.cursor/rules/` (`.md` or `.mdc`). Use `.mdc` if you want frontmatter like `description`, `globs`, `alwaysApply`.
+- **Simple option**: put instructions in `AGENTS.md` at repo root (and optionally nested `AGENTS.md` in subfolders for scoped rules).
+- **Gotcha**: Rules apply to Agent/Chat; they do not affect autocomplete/inline suggestions.
+
+**Minimal template — `.cursor/rules/core.mdc`:**
 
 ```
-You are an expert in Python, FastAPI, PostgreSQL, and React.
+---
+description: "Project-wide engineering invariants"
+alwaysApply: true
+---
 
-Key principles:
-- Use type hints everywhere
-- All database queries use SQLAlchemy ORM
-- Return Pydantic models from all endpoints
-- Follow the existing project structure in /src
-- Write pytest tests for every new function
-- Use async/await for all I/O operations
+You are an engineering agent working in this repository.
+
+Non-negotiables:
+- Follow the existing project structure (do not invent new folders).
+- Security: authz is per-resource; queries are parameterized; secrets only from env.
+- Quality: add/adjust tests for every behavioral change.
+- Output: group changes by file; list assumptions; include a short test plan.
 ```
 
 ---
@@ -259,6 +319,42 @@ Key principles:
 
 **Best for:** Developers already on GitHub who want solid autocomplete + chat without switching editors. Best value at $10/month.
 
+**System prompting setup (VS Code + Copilot Chat):**
+
+- **Always-on repo instructions**: `.github/copilot-instructions.md`
+- **Scoped instructions**: `.github/instructions/*.instructions.md` with `applyTo` globs (frontend vs backend vs tests)
+- **Alternative**: `AGENTS.md` (always-on instructions; may be directory-scoped depending on environment/tooling)
+- **Gotcha**: Custom instructions are **not** used for inline suggestions; they apply to chat/agent requests.
+
+**Minimal template — `.github/copilot-instructions.md`:**
+
+```markdown
+# Project custom instructions (Copilot Chat)
+
+## Non-negotiables
+- Follow existing architecture and naming conventions.
+- Security: parameterized DB queries; authz per resource; no secrets in code or logs.
+- Tests: add or update tests for every change that affects behavior.
+
+## Output format
+- Group changes by file.
+- List assumptions and a short test plan.
+```
+
+**Minimal template — `.github/instructions/backend.instructions.md`:**
+
+```markdown
+---
+applyTo: "**/backend/**"
+---
+
+- All endpoints must enforce authorization per resource.
+- All DB access must be parameterized / ORM-based.
+- Return consistent error shapes and never leak internals.
+```
+
+**System prompting setup (Copilot on GitHub: agents/code review):** same file locations apply (`.github/copilot-instructions.md`, `.github/instructions/*.instructions.md`). Agent instruction files like `AGENTS.md` (nearest in directory tree wins) may also be used depending on the Copilot feature.
+
 ---
 
 ### Windsurf (Codeium)
@@ -277,6 +373,64 @@ Key principles:
 - Cascade can over-engineer simple tasks
 
 **Best for:** Developers who want agentic coding at a lower price point than Cursor.
+
+**System prompting setup (Windsurf / Cascade):**
+
+- **Workspace rules**: `.windsurf/rules/*.md` (one file per rule)
+- **Activation modes** (frontmatter `trigger`): `always_on`, `glob`, `model_decision`, `manual`
+- **Directory-scoped rules without frontmatter**: `AGENTS.md` (repo root = always-on; subdirectories scope automatically)
+- **Gotcha**: Keep rules short; prefer Rules/`AGENTS.md` over auto-memories for durable team-shared standards.
+
+**Minimal template — `.windsurf/rules/tests.md`:**
+
+```markdown
+---
+trigger: glob
+globs: "**/*test*.*"
+---
+
+- Tests must be deterministic (no sleep-based flakiness).
+- Mock external services and time.
+- Include at least one negative test for each new behavior.
+```
+
+---
+
+### Continue.dev
+
+**What it is:** An open-source IDE extension (VS Code / JetBrains) that lets you bring your own model/API key.
+
+**System prompting setup (Continue):**
+
+- **User-level (all projects)**: `~/.continue/config.yaml` (macOS/Linux) or `%USERPROFILE%\\.continue\\config.yaml` (Windows)
+- **Workspace-level overrides**: `.continuerc.json` (useful when you want repo-pinned conventions)
+- **System messages** (per model): under `models[].chatOptions`, set:
+  - `baseSystemMessage` (Chat)
+  - `baseAgentSystemMessage` (Agent)
+  - `basePlanSystemMessage` (Plan)
+- **Rules**: the top-level `rules:` list is concatenated into the system message for Chat/Agent/Edit.
+
+**Minimal template — `~/.continue/config.yaml` (excerpt):**
+
+```yaml
+name: My Config
+version: 1.0.0
+schema: v1
+
+models:
+  - name: GPT-4o
+    provider: openai
+    model: gpt-4o
+    roles: [chat, edit, apply]
+    chatOptions:
+      baseSystemMessage: |
+        You are an engineering agent working in this repository.
+        Non-negotiables: follow existing structure; parameterize queries; authz per resource; include tests.
+
+rules:
+  - Group changes by file and include a short test plan.
+  - Never include secrets in code, logs, or examples.
+```
 
 ---
 
@@ -968,7 +1122,7 @@ Bulk Generation          → Cheap + Fast        → GPT-4o-mini / Gemini Flash 
 | **Using one tool for everything** | No single tool excels at all stages | Match tool to workflow stage |
 | **Paying for Pro before evaluating Free** | Free tiers are increasingly capable | Spend 2 weeks on free tiers first |
 | **Ignoring terminal tools** | IDE tools can't do codebase-wide refactors efficiently | Learn Aider, OpenCode, or other CLI tools for bulk operations |
-| **Not setting up project context** | AI without context produces generic code | Use `.cursorrules`, Claude Projects, or system prompts |
+| **Not setting up project context** | AI without context produces generic code | Use Cursor `.cursor/rules`, `AGENTS.md`, Copilot custom instructions, or system prompts |
 | **Switching tools mid-task** | Context loss wastes time | Complete one step before switching |
 | **Trusting output without review** | All models hallucinate — all of them | Review every output against your requirements |
 | **Over-investing in tools** | Diminishing returns above $100/mo for solo devs | Start low, upgrade when you hit real limits |
@@ -982,7 +1136,7 @@ The AI tooling landscape changes monthly. Protect yourself:
 
 1. **Don't over-commit to one ecosystem.** Use tools that work with standard formats (git, VS Code extensions, standard APIs).
 2. **Keep your prompts portable.** Write prompts that work across models — avoid model-specific syntax.
-3. **Version your configurations.** Keep `.cursorrules`, system prompts, and project context in version control.
+3. **Version your configurations.** Keep rule/instruction files (Cursor `.cursor/rules`, `.github/copilot-instructions.md`, `AGENTS.md`, etc.) and system prompts in version control.
 4. **Monitor pricing changes.** Set calendar reminders to review your tool stack quarterly.
 5. **Learn the fundamentals.** Tools will change. Prompting patterns, system design, and security principles will not.
 
