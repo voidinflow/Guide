@@ -1,0 +1,29 @@
+name: Enhancement / new section
+description: Propose a new section, template, or improvement
+title: "Enhancement: "
+labels: ["enhancement", "docs"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you want to add/change?
+      description: Be concrete. Link to the file(s) and section(s) if possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why does this matter?
+      description: What problem does it solve? Who benefits?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed outline (optional)
+      description: Bullet outline is perfect.
+    validations:
+      required: false
+

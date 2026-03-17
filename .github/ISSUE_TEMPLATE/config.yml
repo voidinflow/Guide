@@ -1,0 +1,6 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question / discuss an idea
+    url: https://github.com
+    about: Use Discussions (or open an issue) if you're unsure where this belongs.
+
